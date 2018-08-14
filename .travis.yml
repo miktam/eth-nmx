@@ -10,7 +10,6 @@ cache:
 env:
   -
   - SOLIDITY_COVERAGE=true
-  - SOLC_NIGHTLY=true
 matrix:
   fast_finish: true
 before_script:
