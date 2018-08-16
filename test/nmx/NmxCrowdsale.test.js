@@ -9,17 +9,18 @@ const { ethGetBalance } = require('../helpers/web3');
 
 const BigNumber = web3.BigNumber;
 
-require('chai')
+const should = require('chai')
   .use(require('chai-bignumber')(BigNumber))
   .should();
 
 const NmxCrowdsale = artifacts.require('NmxCrowdsale');
 const NmxToken = artifacts.require('NmxToken');
 
-contract('NmxCrowdsale', function ([_, owner, wallet, investor]) {
+contract('NmxCrowdsale', function ([_, owner, walletToCollectEth, investor]) {
   const RATE = new BigNumber(10);
-  const value = ether(42);
+  const value = ether(0.42);
   const TOTAL_SUPPLY = 1500000 * (10 ** 18);
+  const expectedTokenAmount = RATE.mul(value);
 
   before(async function () {
     // Advance to the next block to correctly read time in the solidity "now" function interpreted by ganache
@@ -31,14 +32,16 @@ contract('NmxCrowdsale', function ([_, owner, wallet, investor]) {
     this.closingTime = this.openingTime + duration.weeks(12);
     this.afterClosingTime = this.closingTime + duration.seconds(1);
 
+    // owner deploys token
     this.token = await NmxToken.new({ from: owner });
-    this.tokenHolderAddress = owner;
 
+    // owner deploys crowdsale contract
     this.crowdsale = await NmxCrowdsale.new(
-      this.openingTime, this.closingTime, RATE, wallet, this.token.address, this.tokenHolderAddress,
+      this.openingTime, this.closingTime, RATE, walletToCollectEth, this.token.address, owner,
       { from: owner }
     );
 
+    // owner of the tokens approves crowdsale contract to spend
     await this.token.approve(this.crowdsale.address, TOTAL_SUPPLY, {from: owner});
   });
 
@@ -55,7 +58,7 @@ contract('NmxCrowdsale', function ([_, owner, wallet, investor]) {
     openingTime.should.be.bignumber.equal(this.openingTime);
     closingTime.should.be.bignumber.equal(this.closingTime);
     rate.should.be.bignumber.equal(RATE);
-    walletAddress.should.be.equal(wallet);
+    walletAddress.should.be.equal(walletToCollectEth);
     tokenWallet.should.be.equal(owner);
   });
 
