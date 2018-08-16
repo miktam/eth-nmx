@@ -18,6 +18,7 @@ const NmxToken = artifacts.require('NmxToken');
 
 contract('NmxCrowdsale', function ([_, owner, wallet, investor]) {
   const RATE = new BigNumber(10);
+  const value = ether(42);
   const TOTAL_SUPPLY = 1500000 * (10 ** 18);
 
   before(async function () {
@@ -91,9 +92,23 @@ contract('NmxCrowdsale', function ([_, owner, wallet, investor]) {
     balanceOfTokensOwner.should.be.bignumber.equal(TOTAL_SUPPLY - expectedTokenAmount);
   });
 
+  /**
+   * TimedCrowdsale
+   */
+  it('should reject payments before start', async function () {
+    await expectThrow(this.crowdsale.send(ether(1)), EVMRevert);
+    await expectThrow(this.crowdsale.buyTokens(investor, { from: investor, value: value }), EVMRevert);
+  });
+
+  it('should accept payments after start', async function () {
+    await increaseTimeTo(this.openingTime);
+    await this.crowdsale.send(value);
+    await this.crowdsale.buyTokens(investor, { value: ether(1), from: investor });
+  });
+
   it('should reject payments after end', async function () {
     await increaseTimeTo(this.afterClosingTime);
-    await expectThrow(this.crowdsale.send(ether(1)), EVMRevert);
+    await expectThrow(this.crowdsale.send(value), EVMRevert);
     await expectThrow(this.crowdsale.buyTokens(investor, { value: ether(1), from: investor }), EVMRevert);
   });
 });
