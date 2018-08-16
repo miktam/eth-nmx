@@ -1,9 +1,7 @@
 pragma solidity ^0.4.24;
 
-import "../crowdsale/validation/CappedCrowdsale.sol";
-import "../crowdsale/distribution/RefundableCrowdsale.sol";
 import "../crowdsale/emission/AllowanceCrowdsale.sol";
-import "../token/ERC20/MintableToken.sol";
+import "../crowdsale/validation/TimedCrowdsale.sol";
 
 
 contract NmxToken is StandardToken {

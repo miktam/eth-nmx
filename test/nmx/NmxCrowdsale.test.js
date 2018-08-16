@@ -9,7 +9,7 @@ const { ethGetBalance } = require('../helpers/web3');
 
 const BigNumber = web3.BigNumber;
 
-const should = require('chai')
+require('chai')
   .use(require('chai-bignumber')(BigNumber))
   .should();
 
@@ -20,7 +20,6 @@ contract('NmxCrowdsale', function ([_, owner, walletToCollectEth, investor]) {
   const RATE = new BigNumber(10);
   const value = ether(0.42);
   const TOTAL_SUPPLY = 1500000 * (10 ** 18);
-  const expectedTokenAmount = RATE.mul(value);
 
   before(async function () {
     // Advance to the next block to correctly read time in the solidity "now" function interpreted by ganache
