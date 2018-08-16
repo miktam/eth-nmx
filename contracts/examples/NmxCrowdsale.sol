@@ -2,23 +2,27 @@ pragma solidity ^0.4.24;
 
 import "../crowdsale/validation/CappedCrowdsale.sol";
 import "../crowdsale/distribution/RefundableCrowdsale.sol";
-import "../crowdsale/emission/MintedCrowdsale.sol";
+import "../crowdsale/emission/AllowanceCrowdsale.sol";
 import "../token/ERC20/MintableToken.sol";
 
 
-/**
- * @title NmxToken
- * @dev Very simple ERC20 Token that can be minted.
- * It is meant to be used in a crowdsale contract.
- */
-contract NmxToken is MintableToken {
+contract NmxToken is StandardToken {
 
-  string public constant name = "NmxToken";
+  string public constant name = "Numex";
   string public constant symbol = "NMX";
   uint8 public constant decimals = 18;
 
-}
+  uint256 public constant INITIAL_SUPPLY = 1500000 * (10 ** uint256(decimals));
 
+  /**
+   * @dev Constructor that gives msg.sender all of existing tokens.
+   */
+  constructor() public {
+    totalSupply_ = INITIAL_SUPPLY;
+    balances[msg.sender] = INITIAL_SUPPLY;
+    emit Transfer(address(0), msg.sender, INITIAL_SUPPLY);
+  }
+}
 
 /**
  * @title NmxCrowdsale
@@ -28,7 +32,7 @@ contract NmxToken is MintableToken {
  * CappedCrowdsale - sets a max boundary for raised funds
  */
 // solium-disable-next-line max-len
-contract NmxCrowdsale is CappedCrowdsale, MintedCrowdsale, TimedCrowdsale {
+contract NmxCrowdsale is AllowanceCrowdsale, TimedCrowdsale {
 
   event CrowdsaleCreated(address owner, uint256 openingTime, uint256 closingTime, uint256 rate);
 
@@ -37,12 +41,12 @@ contract NmxCrowdsale is CappedCrowdsale, MintedCrowdsale, TimedCrowdsale {
     uint256 _closingTime,
     uint256 _rate,
     address _wallet,
-    uint256 _cap,
-    MintableToken _token
+    StandardToken _token,
+    address _tokenHolderWallet
   )
     public
     Crowdsale(_rate, _wallet, _token)
-    CappedCrowdsale(_cap)
+    AllowanceCrowdsale(_tokenHolderWallet)
     TimedCrowdsale(_openingTime, _closingTime)
   {
     emit CrowdsaleCreated(msg.sender, _openingTime, _closingTime, _rate);
