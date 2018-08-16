@@ -26,10 +26,11 @@ contract NmxToken is MintableToken {
  * The way to add new features to a base crowdsale is by multiple inheritance.
  * In this example we are providing following extensions:
  * CappedCrowdsale - sets a max boundary for raised funds
- * RefundableCrowdsale - set a min goal to be reached and returns funds if it's not met
  */
 // solium-disable-next-line max-len
-contract NmxCrowdsale is CappedCrowdsale, RefundableCrowdsale, MintedCrowdsale {
+contract NmxCrowdsale is CappedCrowdsale, MintedCrowdsale, TimedCrowdsale {
+
+  event CrowdsaleCreated(address owner, uint256 openingTime, uint256 closingTime, uint256 rate);
 
   constructor(
     uint256 _openingTime,
@@ -37,17 +38,13 @@ contract NmxCrowdsale is CappedCrowdsale, RefundableCrowdsale, MintedCrowdsale {
     uint256 _rate,
     address _wallet,
     uint256 _cap,
-    MintableToken _token,
-    uint256 _goal
+    MintableToken _token
   )
     public
     Crowdsale(_rate, _wallet, _token)
     CappedCrowdsale(_cap)
     TimedCrowdsale(_openingTime, _closingTime)
-    RefundableCrowdsale(_goal)
   {
-    //As goal needs to be met for a successful crowdsale
-    //the value needs to less or equal than a cap which is limit for accepted funds
-    require(_goal <= _cap);
+    emit CrowdsaleCreated(msg.sender, _openingTime, _closingTime, _rate);
   }
 }

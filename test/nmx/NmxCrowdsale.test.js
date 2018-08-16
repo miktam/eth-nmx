@@ -18,7 +18,6 @@ const NmxToken = artifacts.require('NmxToken');
 
 contract('NmxCrowdsale', function ([_, owner, wallet, investor]) {
   const RATE = new BigNumber(10);
-  const GOAL = ether(10);
   const CAP = ether(20);
 
   before(async function () {
@@ -28,12 +27,12 @@ contract('NmxCrowdsale', function ([_, owner, wallet, investor]) {
 
   beforeEach(async function () {
     this.openingTime = (await latestTime()) + duration.weeks(1);
-    this.closingTime = this.openingTime + duration.weeks(1);
+    this.closingTime = this.openingTime + duration.weeks(12);
     this.afterClosingTime = this.closingTime + duration.seconds(1);
 
     this.token = await NmxToken.new({ from: owner });
     this.crowdsale = await NmxCrowdsale.new(
-      this.openingTime, this.closingTime, RATE, wallet, CAP, this.token.address, GOAL,
+      this.openingTime, this.closingTime, RATE, wallet, CAP, this.token.address,
       { from: owner }
     );
     await this.token.transferOwnership(this.crowdsale.address, { from: owner });
@@ -47,14 +46,12 @@ contract('NmxCrowdsale', function ([_, owner, wallet, investor]) {
     const closingTime = await this.crowdsale.closingTime();
     const rate = await this.crowdsale.rate();
     const walletAddress = await this.crowdsale.wallet();
-    const goal = await this.crowdsale.goal();
     const cap = await this.crowdsale.cap();
 
     openingTime.should.be.bignumber.equal(this.openingTime);
     closingTime.should.be.bignumber.equal(this.closingTime);
     rate.should.be.bignumber.equal(RATE);
     walletAddress.should.be.equal(wallet);
-    goal.should.be.bignumber.equal(GOAL);
     cap.should.be.bignumber.equal(CAP);
   });
 
@@ -90,42 +87,5 @@ contract('NmxCrowdsale', function ([_, owner, wallet, investor]) {
     await increaseTimeTo(this.openingTime);
     await this.crowdsale.send(CAP);
     await expectThrow(this.crowdsale.send(1), EVMRevert);
-  });
-
-  it('should allow finalization and transfer funds to wallet if the goal is reached', async function () {
-    await increaseTimeTo(this.openingTime);
-    await this.crowdsale.send(GOAL);
-
-    const beforeFinalization = await ethGetBalance(wallet);
-    await increaseTimeTo(this.afterClosingTime);
-    await this.crowdsale.finalize({ from: owner });
-    const afterFinalization = await ethGetBalance(wallet);
-
-    afterFinalization.minus(beforeFinalization).should.be.bignumber.equal(GOAL);
-  });
-
-  it('should allow refunds if the goal is not reached', async function () {
-    const balanceBeforeInvestment = await ethGetBalance(investor);
-
-    await increaseTimeTo(this.openingTime);
-    await this.crowdsale.sendTransaction({ value: ether(1), from: investor, gasPrice: 0 });
-    await increaseTimeTo(this.afterClosingTime);
-
-    await this.crowdsale.finalize({ from: owner });
-    await this.crowdsale.claimRefund({ from: investor, gasPrice: 0 });
-
-    const balanceAfterRefund = await ethGetBalance(investor);
-    balanceBeforeInvestment.should.be.bignumber.equal(balanceAfterRefund);
-  });
-
-  describe('when goal > cap', function () {
-    // goal > cap
-    const HIGH_GOAL = ether(30);
-
-    it('creation reverts', async function () {
-      await assertRevert(NmxCrowdsale.new(
-        this.openingTime, this.closingTime, RATE, wallet, CAP, this.token.address, HIGH_GOAL
-      ));
-    });
   });
 });
