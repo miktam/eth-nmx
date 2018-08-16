@@ -24,12 +24,9 @@ contract NmxToken is StandardToken {
 
 /**
  * @title NmxCrowdsale
- * @dev This is an example of a fully fledged crowdsale.
- * The way to add new features to a base crowdsale is by multiple inheritance.
- * In this example we are providing following extensions:
- * CappedCrowdsale - sets a max boundary for raised funds
+ * TimedCrowdsale - sets a time boundary for raising funds
+ * AllowanceCrowdsale - allows to purchase tokens from external wallet
  */
-// solium-disable-next-line max-len
 contract NmxCrowdsale is AllowanceCrowdsale, TimedCrowdsale {
 
   event CrowdsaleCreated(address owner, uint256 openingTime, uint256 closingTime, uint256 rate);
