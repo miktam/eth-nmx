@@ -43,7 +43,7 @@ contract('NmxCrowdsale', function ([_, owner, walletToCollectEth, investor, publ
     );
 
     // owner of the tokens approves crowdsale contract to spend
-    await this.token.approve(this.crowdsale.address, TOTAL_SUPPLY, {from: owner});
+    await this.token.approve(this.crowdsale.address, TOTAL_SUPPLY, { from: owner });
   });
 
   const calculateRateBasedOnTokenPrice = (ethusdRate, pricePerToken) => {
