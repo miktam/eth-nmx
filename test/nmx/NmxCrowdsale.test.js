@@ -17,7 +17,10 @@ const NmxCrowdsale = artifacts.require('NmxCrowdsale');
 const NmxToken = artifacts.require('NmxToken');
 
 contract('NmxCrowdsale', function ([_, owner, walletToCollectEth, investor]) {
-  const RATE = new BigNumber(10);
+  // with the ETHUSD 300 - investor gets 600 tokens per 1 ether if token = 0.5USD
+  const RATE_PRIVATE = new BigNumber(600);
+  // with the ETHUSD 300 - investor gets 300 tokens per 1 ether if token = 0.5USD
+  const RATE_PUBLIC = new BigNumber(300);
   const value = ether(0.42);
   const TOTAL_SUPPLY = 1500000 * (10 ** 18);
 
@@ -36,7 +39,7 @@ contract('NmxCrowdsale', function ([_, owner, walletToCollectEth, investor]) {
 
     // owner deploys crowdsale contract
     this.crowdsale = await NmxCrowdsale.new(
-      this.openingTime, this.closingTime, RATE, walletToCollectEth, this.token.address, owner,
+      this.openingTime, this.closingTime, RATE_PRIVATE, walletToCollectEth, this.token.address, owner,
       { from: owner }
     );
 
@@ -44,25 +47,21 @@ contract('NmxCrowdsale', function ([_, owner, walletToCollectEth, investor]) {
     await this.token.approve(this.crowdsale.address, TOTAL_SUPPLY, {from: owner});
   });
 
-  const calculateRateBasedOnTokenPrice = (pricePerToken, pricePerEther) => {
-    console.log(`Calculate price per token ${pricePerToken} based on EthUsd ${pricePerEther}`);
-    const wei = new BigNumber(10 ** 18);
-    const amountOfTokensPerOneEther = new BigNumber(pricePerEther / pricePerToken);
-    console.log('Amount of tokens per 1 Ether:', amountOfTokensPerOneEther.toNumber());
-    const howManyTokensPerOneWei = amountOfTokensPerOneEther.div(wei);
-    console.log('Result:', howManyTokensPerOneWei.toNumber());
+  const calculateRateBasedOnTokenPrice = (ethusdRate, pricePerToken) => {
+    console.log(`Calculate price per token ${ethusdRate} based on EthUsd ${pricePerToken}`);
+    const amountOfTokensPerOneEther = ethusdRate / pricePerToken;
+    console.log('Amount of tokens per 1 Ether:', amountOfTokensPerOneEther);
+    return amountOfTokensPerOneEther;
   };
 
   it('should calculate proper rate', function () {
-    const ETHUSD_CENTS = 30000;
-    const PRICE_PER_TOKEN_IN_USDCENTS_FIRST = 50;
-    // const PRICE_PUBLIC_USDCENTS = 100;
-    calculateRateBasedOnTokenPrice(PRICE_PER_TOKEN_IN_USDCENTS_FIRST, ETHUSD_CENTS);
-    // calculateRateBasedOnTokenPrice(PRICE_PUBLIC_USDCENTS, ETHUSD_CENTS);
-
-    // 1 ether = 1**18 wei == 30000 cents
-    // 1 wei = 30000/1**18
-    // 1 token = ? wei
+    const ETHUSD_RATE = 300;
+    const PRICE_PER_TOKEN_PRIVATE = 0.50;
+    const PRICE_PER_TOKEN_PUBLIC = 1;
+    const amountOfTokensPrivate = calculateRateBasedOnTokenPrice(ETHUSD_RATE, PRICE_PER_TOKEN_PRIVATE);
+    amountOfTokensPrivate.should.equal(600);
+    const amountOfTokensPublic = calculateRateBasedOnTokenPrice(ETHUSD_RATE, PRICE_PER_TOKEN_PUBLIC);
+    amountOfTokensPublic.should.equal(300);
   });
 
   it('should create crowdsale with correct parameters', async function () {
@@ -77,7 +76,7 @@ contract('NmxCrowdsale', function ([_, owner, walletToCollectEth, investor]) {
 
     openingTime.should.be.bignumber.equal(this.openingTime);
     closingTime.should.be.bignumber.equal(this.closingTime);
-    rate.should.be.bignumber.equal(RATE);
+    rate.should.be.bignumber.equal(RATE_PRIVATE);
     walletAddress.should.be.equal(walletToCollectEth);
     tokenWallet.should.be.equal(owner);
   });
@@ -101,12 +100,16 @@ contract('NmxCrowdsale', function ([_, owner, walletToCollectEth, investor]) {
 
   it('should accept payments during the sale', async function () {
     const investmentAmount = ether(1);
-    const expectedTokenAmount = RATE.mul(investmentAmount);
+    const expectedTokenAmount = RATE_PRIVATE.mul(investmentAmount);
+    console.log('Expected token amount:', expectedTokenAmount.toNumber(), 'for amount of ether: 1');
 
     await increaseTimeTo(this.openingTime);
     await this.crowdsale.buyTokens(investor, { value: investmentAmount, from: investor });
 
-    (await this.token.balanceOf(investor)).should.be.bignumber.equal(expectedTokenAmount);
+    const tokensForInvestor = await this.token.balanceOf(investor);
+
+    tokensForInvestor.should.be.bignumber.equal(expectedTokenAmount);
+    console.log('Investor has amount of tokens:', tokensForInvestor.toNumber());
 
     const remainingTokens = await this.crowdsale.remainingTokens();
     remainingTokens.should.be.bignumber.equal(TOTAL_SUPPLY - expectedTokenAmount);
