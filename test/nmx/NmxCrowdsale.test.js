@@ -44,6 +44,27 @@ contract('NmxCrowdsale', function ([_, owner, walletToCollectEth, investor]) {
     await this.token.approve(this.crowdsale.address, TOTAL_SUPPLY, {from: owner});
   });
 
+  const calculateRateBasedOnTokenPrice = (pricePerToken, pricePerEther) => {
+    console.log(`Calculate price per token ${pricePerToken} based on EthUsd ${pricePerEther}`);
+    const wei = new BigNumber(10 ** 18);
+    const amountOfTokensPerOneEther = new BigNumber(pricePerEther / pricePerToken);
+    console.log('Amount of tokens per 1 Ether:', amountOfTokensPerOneEther.toNumber());
+    const howManyTokensPerOneWei = amountOfTokensPerOneEther.div(wei);
+    console.log('Result:', howManyTokensPerOneWei.toNumber());
+  };
+
+  it('should calculate proper rate', function () {
+    const ETHUSD_CENTS = 30000;
+    const PRICE_PER_TOKEN_IN_USDCENTS_FIRST = 50;
+    // const PRICE_PUBLIC_USDCENTS = 100;
+    calculateRateBasedOnTokenPrice(PRICE_PER_TOKEN_IN_USDCENTS_FIRST, ETHUSD_CENTS);
+    // calculateRateBasedOnTokenPrice(PRICE_PUBLIC_USDCENTS, ETHUSD_CENTS);
+
+    // 1 ether = 1**18 wei == 30000 cents
+    // 1 wei = 30000/1**18
+    // 1 token = ? wei
+  });
+
   it('should create crowdsale with correct parameters', async function () {
     this.crowdsale.should.exist;
     this.token.should.exist;
