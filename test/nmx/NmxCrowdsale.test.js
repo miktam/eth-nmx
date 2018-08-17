@@ -4,7 +4,6 @@ const { increaseTimeTo, duration } = require('../helpers/increaseTime');
 const { latestTime } = require('../helpers/latestTime');
 const { expectThrow } = require('../helpers/expectThrow');
 const { EVMRevert } = require('../helpers/EVMRevert');
-const { assertRevert } = require('../helpers/assertRevert');
 const { ethGetBalance } = require('../helpers/web3');
 
 const BigNumber = web3.BigNumber;
@@ -153,5 +152,13 @@ contract('NmxCrowdsale', function ([_, owner, walletToCollectEth, investor, publ
 
     const tokensForLateInvestor = await this.token.balanceOf(publicInvestor);
     tokensForLateInvestor.should.be.bignumber.equal(laterExpectedTokenAmount);
+  });
+
+  it('should forward funds to wallet', async function () {
+    const pre = await ethGetBalance(walletToCollectEth);
+    await increaseTimeTo(this.openingTime);
+    await this.crowdsale.sendTransaction({ value, from: investor });
+    const post = await ethGetBalance(walletToCollectEth);
+    post.minus(pre).should.be.bignumber.equal(value);
   });
 });
