@@ -22,6 +22,7 @@ contract NmxToken is StandardToken {
   }
 }
 
+
 /**
  * @title NmxCrowdsale
  * TimedCrowdsale - sets a time boundary for raising funds
@@ -29,6 +30,7 @@ contract NmxToken is StandardToken {
  */
 contract NmxCrowdsale is AllowanceCrowdsale, IncreasingPriceCrowdsale {
 
+  // solium-disable-next-line max-len
   event CrowdsaleCreated(address owner, uint256 openingTime, uint256 closingTime, uint256 rate);
 
   constructor(
@@ -46,7 +48,11 @@ contract NmxCrowdsale is AllowanceCrowdsale, IncreasingPriceCrowdsale {
     TimedCrowdsale(_openingTime, _closingTime)
     IncreasingPriceCrowdsale(_rate, _ratePublic)
   {
-    emit CrowdsaleCreated(msg.sender, _openingTime, _closingTime, _rate);
+    emit CrowdsaleCreated(
+      msg.sender, 
+      _openingTime, 
+      _closingTime, 
+      _rate);
   }
 
   /**

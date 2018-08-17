@@ -1,5 +1,7 @@
 pragma solidity ^0.4.24;
 
+
+  // solium-disable max-len
 contract EIP20Interface {
   /* This is a slight change to the ERC20 base standard.
   function totalSupply() constant returns (uint256 supply);
@@ -46,6 +48,7 @@ contract EIP20Interface {
   event Approval(address indexed _owner, address indexed _spender, uint256 _value);
 }
 
+
 contract NumexToken is EIP20Interface {
 
   uint256 constant private MAX_UINT256 = 2**256 - 1;
@@ -57,16 +60,17 @@ contract NumexToken is EIP20Interface {
   They allow one to customise the token contract & in no way influences the core functionality.
   Some wallets/interfaces might not even bother to look at this information.
   */
-  string public name = "Numex Coin";
+  string public name = "Numex";
   uint8 public decimals = 18;
-  string public symbol = "NUMEX";
+  string public symbol = "NMX";
 
   function NumexToken(
     uint256 _initialAmount,
     string _tokenName,
     uint8 _decimalUnits,
     string _tokenSymbol
-  ) public {
+  ) public 
+  {
     balances[msg.sender] = _initialAmount;         // Give the creator all initial tokens
     totalSupply = _initialAmount;            // Update total supply
     name = _tokenName;                   // Set the name for display purposes
