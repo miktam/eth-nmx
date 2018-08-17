@@ -286,6 +286,25 @@ library SafeERC20 {
 }
 
 
+contract NmxToken is StandardToken {
+
+  string public constant name = "Numex";
+  string public constant symbol = "NMX";
+  uint8 public constant decimals = 18;
+
+  uint256 public constant INITIAL_SUPPLY = 1500000 * (10 ** uint256(decimals));
+
+  /**
+   * @dev Constructor that gives msg.sender all of existing tokens.
+   */
+  constructor() public {
+    totalSupply_ = INITIAL_SUPPLY;
+    balances[msg.sender] = INITIAL_SUPPLY;
+    emit Transfer(address(0), msg.sender, INITIAL_SUPPLY);
+  }
+}
+
+
 /**
  * @title Crowdsale
  * @dev Crowdsale is a base contract for managing a token crowdsale,
@@ -636,25 +655,6 @@ contract IncreasingPriceCrowdsale is TimedCrowdsale {
     return currentRate.mul(_weiAmount);
   }
 
-}
-
-
-contract NmxToken is StandardToken {
-
-  string public constant name = "Numex";
-  string public constant symbol = "NMX";
-  uint8 public constant decimals = 18;
-
-  uint256 public constant INITIAL_SUPPLY = 1500000 * (10 ** uint256(decimals));
-
-  /**
-   * @dev Constructor that gives msg.sender all of existing tokens.
-   */
-  constructor() public {
-    totalSupply_ = INITIAL_SUPPLY;
-    balances[msg.sender] = INITIAL_SUPPLY;
-    emit Transfer(address(0), msg.sender, INITIAL_SUPPLY);
-  }
 }
 
 
