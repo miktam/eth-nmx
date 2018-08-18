@@ -65,18 +65,11 @@ contract NumexToken is EIP20Interface {
   string public symbol = "NMX";
   uint256 public constant INITIAL_SUPPLY = 1500000 * (10 ** uint256(decimals));
 
-  function NumexToken(
-    // uint256 _initialAmount,
-    // string _tokenName,
-    // uint8 _decimalUnits,
-    // string _tokenSymbol
+  constructor(
   ) public 
   {
-    // balances[msg.sender] = INITIAL_SUPPLY;         // Give the creator all initial tokens
-    // totalSupply = INITIAL_SUPPLY;            // Update total supply
-    // name = _tokenName;                   // Set the name for display purposes
-    // decimals = _decimalUnits;              // Amount of decimals for display purposes
-    // symbol = _tokenSymbol;                 // Set the symbol for display purposes
+    balances[msg.sender] = INITIAL_SUPPLY;         // Give the creator all initial tokens
+    totalSupply = INITIAL_SUPPLY;            // Update total supply
   }
 
   function transfer(address _to, uint256 _value) public returns (bool success) {
