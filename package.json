@@ -20,11 +20,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/miktamsol/eth-nmx.git"
+    "url": "https://github.com/miktam/eth-nmx.git"
   },
   "author": "Miktam <miktam@miktam.org>",
   "license": "MIT",
-  "homepage": "https://github.com/miktamsol/eth-nmx.git",
+  "homepage": "https://github.com/miktam/eth-nmx.git",
   "devDependencies": {
     "chai": "^4.1.2",
     "chai-bignumber": "^2.0.2",
