@@ -1,33 +1,22 @@
 # Eth-nmx
-[![Build Status](https://img.shields.io/travis/miktamsol/eth-nmx.svg?branch=master&style=flat-square)](https://travis-ci.org/miktamsol/eth-nmx)
-[![Coverage Status](https://img.shields.io/coveralls/github/miktamsol/eth-nmx/master.svg?style=flat-square)](https://coveralls.io/github/miktamsol/eth-nmx?branch=master)
+[![Build Status](https://img.shields.io/travis/miktam/eth-nmx.svg?branch=master&style=flat-square)](https://travis-ci.org/miktam/eth-nmx)
+[![Coverage Status](https://img.shields.io/coveralls/github/miktam/eth-nmx/master.svg?style=flat-square)](https://coveralls.io/github/miktam/eth-nmx?branch=master)
 
 ## Crowdsale Contracts
-Smart contract for crowdsale, based on OpenZeppelin libraries of community audited code. 
+Smart contract for crowdsale, fulfilling following requrements:
 
-Assumptions are:
-- price of token is based on ETHUSD price, taken from Coinbase in the time of contract deployment
-- change in amount of tokens distributed is based on amount of contributed Ether in wei
-- tokens are not locked from withdrawal until it ends
-
-According to OZ, to build your own distributed applications, for security reasons we encourage you NOT to modify the framework’s base contracts, libraries, and interfaces. In order to leverage and extend their functionality, we encourage you to inherit from them or compose them together with your own contracts.
-
-The Solidity programming language supports multiple inheritance. This is very powerful yet it can also be confusing: the more complexity you introduce to your distributed applications through multiple inheritance, the greater your application’s attack surface is.
+1) there are 2 stages, 6 weeks each
+2) token is deployed separately, full amount of tokens will be sold
+3) price per token: 0.5USD in first stage, 1USD in second stage
 
 ## Variables to provide
-- startTime (August 20th, 12am)
-- closing time (in 12 weeks)
-- wallet (ideally multisig)
-- token address
-- initial rate (at the time of deployment - eg Coinbase ETHUSD)
-- final rate 
-
-no need to provide:
-- whitelist addresses
-- refund (total soft, hard caps)
-- individual caps
+- startTime (August 20th, 12am)   - in [Unix epoch time](https://www.epochconverter.com/)
+- closing time (in 12 weeks)      - in Unix epoch time
+- wallet to store collected ETH
+- token address                   - ERC20 token address
+- initial rate                    - amount of tokens per 1 Ether in first phase
+- final rate                      - amount of tokens per 1 Ether in second phase
 
 ## Security
-OpenZeppelin is meant to provide secure, tested and community-audited code, but please use common sense when doing anything that deals with real money! We take no responsibility for your implementation decisions and any security problem you might experience.
+Crowdsale contract is heavily influenced by [OpenZeppelin](https://github.com/OpenZeppelin/openzeppelin-solidity/) community audited smart contracts
 
-The core development principles and strategies that OpenZeppelin is based on include: security in depth, simple and modular code, clarity-driven naming conventions, comprehensive unit testing, pre-and-post-condition sanity checks, code consistency, and regular audits.
