@@ -63,7 +63,7 @@ contract NumexToken is EIP20Interface {
   string public name = "Numex";
   uint8 public decimals = 18;
   string public symbol = "NMX";
-  uint256 public constant INITIAL_SUPPLY = 1500000 * (10 ** uint256(decimals));
+  uint256 public constant INITIAL_SUPPLY = 1500000 * (10 ** 18);
 
   constructor(
   ) public 
