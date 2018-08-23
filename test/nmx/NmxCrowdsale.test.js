@@ -5,6 +5,7 @@ const { latestTime } = require('../helpers/latestTime');
 const { expectThrow } = require('../helpers/expectThrow');
 const { EVMRevert } = require('../helpers/EVMRevert');
 const { ethGetBalance } = require('../helpers/web3');
+const expectEvent = require('../helpers/expectEvent');
 
 const BigNumber = web3.BigNumber;
 
@@ -15,7 +16,7 @@ require('chai')
 const NmxCrowdsale = artifacts.require('NmxCrowdsale');
 const NmxToken = artifacts.require('NmxToken');
 
-contract('NmxCrowdsale', function ([_, owner, walletToCollectEth, investor, publicInvestor]) {
+contract('NmxCrowdsale', function ([_, owner, walletToCollectEth, investor, publicInvestor, recipient]) {
   // with the ETHUSD 300 - investor gets 600 tokens per 1 ether if token = 0.5USD
   const RATE_PRIVATE = new BigNumber(600);
   // with the ETHUSD 300 - investor gets 300 tokens per 1 ether if token = 0.5USD
@@ -174,5 +175,42 @@ contract('NmxCrowdsale', function ([_, owner, walletToCollectEth, investor, publ
     await this.crowdsale.sendTransaction({ value, from: investor });
     const post = await ethGetBalance(walletToCollectEth);
     post.minus(pre).should.be.bignumber.equal(value);
+  });
+
+  it('returns the total amount of tokens', async function () {
+    (await this.token.totalSupply()).should.be.bignumber.equal(TOTAL_SUPPLY);
+  });
+
+  describe('transfer', function () {
+    describe('when the recipient is not the zero address', function () {
+      const to = recipient;
+
+      describe('when the sender does not have enough balance', function () {
+        const amount = 101;
+
+        it('reverts', async function () {
+          await expectThrow(this.token.transfer(to, amount, { from: investor }), EVMRevert);
+        });
+      });
+
+      describe('when the sender has enough balance', function () {
+        const amount = 100 * (10 ** 18);
+
+        it('transfers the requested amount', async function () {
+          const tokenForOwner = await this.token.balanceOf(owner);
+          await this.token.transfer(to, amount, { from: owner });
+          (await this.token.balanceOf(owner)).should.be.bignumber.equal(tokenForOwner - amount);
+          (await this.token.balanceOf(to)).should.be.bignumber.equal(amount);
+        });
+
+        it('emits a transfer event', async function () {
+          const { logs } = await this.token.transfer(to, amount, { from: owner });
+
+          const event = expectEvent.inLogs(logs, 'Transfer', { from: owner, to });
+
+          event.args.value.should.be.bignumber.equal(amount);
+        });
+      });
+    });
   });
 });
