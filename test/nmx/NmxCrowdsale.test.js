@@ -24,6 +24,8 @@ contract('NmxCrowdsale', function ([_, owner, walletToCollectEth, investor, publ
   const value = ether(0.42);
   const TOTAL_SUPPLY = 1500000 * (10 ** 18);
 
+  const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
+
   before(async function () {
     // Advance to the next block to correctly read time in the solidity "now" function interpreted by ganache
     await advanceBlock();
@@ -181,6 +183,12 @@ contract('NmxCrowdsale', function ([_, owner, walletToCollectEth, investor, publ
     (await this.token.totalSupply()).should.be.bignumber.equal(TOTAL_SUPPLY);
   });
 
+  it('should return correct rate', async function () {
+    await increaseTimeTo(this.openingTime);
+    const currentRate = await this.crowdsale.getCurrentRate();
+    currentRate.should.be.bignumber.equal(RATE_PRIVATE);
+  });
+
   describe('transfer', function () {
     describe('when the recipient is not the zero address', function () {
       const to = recipient;
@@ -210,6 +218,100 @@ contract('NmxCrowdsale', function ([_, owner, walletToCollectEth, investor, publ
 
           event.args.value.should.be.bignumber.equal(amount);
         });
+      });
+    });
+  });
+
+  describe('increase approval', function () {
+    const amount = 100;
+
+    describe('when the spender is not the zero address', function () {
+      const spender = recipient;
+
+      describe('when the sender has enough balance', function () {
+        it('emits an approval event', async function () {
+          const { logs } = await this.token.increaseApproval(spender, amount, { from: owner });
+
+          logs.length.should.eq(1);
+          logs[0].event.should.eq('Approval');
+          logs[0].args.owner.should.eq(owner);
+          logs[0].args.spender.should.eq(spender);
+          logs[0].args.value.should.be.bignumber.equal(amount);
+        });
+
+        describe('when there was no approved amount before', function () {
+          it('approves the requested amount', async function () {
+            await this.token.increaseApproval(spender, amount, { from: owner });
+
+            (await this.token.allowance(owner, spender)).should.be.bignumber.equal(amount);
+          });
+        });
+
+        describe('when the spender had an approved amount', function () {
+          beforeEach(async function () {
+            await this.token.approve(spender, 1, { from: owner });
+          });
+
+          it('increases the spender allowance adding the requested amount', async function () {
+            await this.token.increaseApproval(spender, amount, { from: owner });
+
+            (await this.token.allowance(owner, spender)).should.be.bignumber.equal(amount + 1);
+          });
+        });
+      });
+
+      describe('when the sender does not have enough balance', function () {
+        const amount = 101;
+
+        it('emits an approval event', async function () {
+          const { logs } = await this.token.increaseApproval(spender, amount, { from: owner });
+
+          logs.length.should.eq(1);
+          logs[0].event.should.eq('Approval');
+          logs[0].args.owner.should.eq(owner);
+          logs[0].args.spender.should.eq(spender);
+          logs[0].args.value.should.be.bignumber.equal(amount);
+        });
+
+        describe('when there was no approved amount before', function () {
+          it('approves the requested amount', async function () {
+            await this.token.increaseApproval(spender, amount, { from: owner });
+
+            (await this.token.allowance(owner, spender)).should.be.bignumber.equal(amount);
+          });
+        });
+
+        describe('when the spender had an approved amount', function () {
+          beforeEach(async function () {
+            await this.token.approve(spender, 1, { from: owner });
+          });
+
+          it('increases the spender allowance adding the requested amount', async function () {
+            await this.token.increaseApproval(spender, amount, { from: owner });
+
+            (await this.token.allowance(owner, spender)).should.be.bignumber.equal(amount + 1);
+          });
+        });
+      });
+    });
+
+    describe('when the spender is the zero address', function () {
+      const spender = ZERO_ADDRESS;
+
+      it('approves the requested amount', async function () {
+        await this.token.increaseApproval(spender, amount, { from: owner });
+
+        (await this.token.allowance(owner, spender)).should.be.bignumber.equal(amount);
+      });
+
+      it('emits an approval event', async function () {
+        const { logs } = await this.token.increaseApproval(spender, amount, { from: owner });
+
+        logs.length.should.eq(1);
+        logs[0].event.should.eq('Approval');
+        logs[0].args.owner.should.eq(owner);
+        logs[0].args.spender.should.eq(spender);
+        logs[0].args.value.should.be.bignumber.equal(amount);
       });
     });
   });
