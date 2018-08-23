@@ -668,6 +668,15 @@ contract NmxCrowdsale is AllowanceCrowdsale, IncreasingPriceCrowdsale {
   // solium-disable-next-line max-len
   event CrowdsaleCreated(address owner, uint256 openingTime, uint256 closingTime, uint256 rate);
 
+  /**
+   * @param _openingTime  time in Unix epoch - opening the crowdsale
+   * @param _closingTime  time in Unix epoch - closing the crowdsale
+   * @param _rate         how many tokens per 1 Ether in first stage
+   * @param _ratePublic   how many tokens per 1 Ether in last stage
+   * @param _wallet       wallet to collect Ether
+   * @param _token        ERC20 token to put on sale
+   * @param _tokenHolder  address of the token holder - to approve crowdsale
+   */
   constructor(
     uint256 _openingTime,
     uint256 _closingTime,
@@ -675,11 +684,11 @@ contract NmxCrowdsale is AllowanceCrowdsale, IncreasingPriceCrowdsale {
     uint256 _ratePublic,
     address _wallet,
     StandardToken _token,
-    address _tokenHolderWallet
+    address _tokenHolder
   )
     public
     Crowdsale(_rate, _wallet, _token)
-    AllowanceCrowdsale(_tokenHolderWallet)
+    AllowanceCrowdsale(_tokenHolder)
     TimedCrowdsale(_openingTime, _closingTime)
     IncreasingPriceCrowdsale(_rate, _ratePublic)
   {
