@@ -189,6 +189,9 @@ contract('NmxCrowdsale', function ([_, owner, walletToCollectEth, investor, publ
     currentRate.should.be.bignumber.equal(RATE_PRIVATE);
   });
 
+  /**
+   * Transferring funds
+   */
   describe('transfer', function () {
     describe('when the recipient is not the zero address', function () {
       const to = recipient;
@@ -221,6 +224,10 @@ contract('NmxCrowdsale', function ([_, owner, walletToCollectEth, investor, publ
       });
     });
   });
+
+  /**
+   * Managing ERC20 methods
+   */
 
   describe('increase approval', function () {
     const amount = 100;
@@ -312,6 +319,34 @@ contract('NmxCrowdsale', function ([_, owner, walletToCollectEth, investor, publ
         logs[0].args.owner.should.eq(owner);
         logs[0].args.spender.should.eq(spender);
         logs[0].args.value.should.be.bignumber.equal(amount);
+      });
+    });
+
+    describe('deploying with wrong parameters', function () {
+      const zeroAddress = ZERO_ADDRESS;
+
+      it('rate is negative', async function () {
+        await expectThrow(
+          NmxCrowdsale.new(
+            this.openingTime, this.closingTime, 0, 0, walletToCollectEth, this.token.address, owner),
+          EVMRevert
+        );
+      });
+
+      it('wrong address for wallet', async function () {
+        await expectThrow(
+          NmxCrowdsale.new(
+            this.openingTime, this.closingTime, 0, 0, zeroAddress, this.token.address, owner),
+          EVMRevert
+        );
+      });
+
+      it('wrong address for token', async function () {
+        await expectThrow(
+          NmxCrowdsale.new(
+            this.openingTime, this.closingTime, 0, 0, walletToCollectEth, zeroAddress, owner),
+          EVMRevert
+        );
       });
     });
   });
