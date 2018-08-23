@@ -49,25 +49,10 @@ contract('NmxCrowdsale', function ([_, owner, walletToCollectEth, investor, publ
     await this.token.approve(this.crowdsale.address, TOTAL_SUPPLY, { from: owner });
   });
 
-  /**
-   * @param startTimeEpoch - time in Unix epoch - eg https://www.epochconverter.com/
-   * @param finishTimeEpoch - time in Unix epoch
-   * @param ratePrivate - how many coins per 1 Ether, eg 600 per 1 ETH if ETHUSD = 300
-   * @param ratePublic - how many coins per 1 Ether, eg 300 per 1 if ETHUSD = 300
-   */
-  const createParameters = (startTimeEpoch, finishTimeEpoch, ratePrivate, ratePublic) => {
-    // TODO consider to take ETHUSD rate and calculate exact token amount
-  };
-
   const calculateRateBasedOnTokenPrice = (ethusdRate, pricePerToken) => {
     const amountOfTokensPerOneEther = ethusdRate / pricePerToken;
-    console.log('Amount of tokens per 1 Ether:', amountOfTokensPerOneEther);
     return amountOfTokensPerOneEther;
   };
-
-  it('should provide correct parameters', () => {
-    createParameters(new Date().getTime(), new Date().getTime() + 1000, 600, 300);
-  });
 
   it('should calculate proper rate', function () {
     const ETHUSD_RATE = 300;
@@ -187,6 +172,15 @@ contract('NmxCrowdsale', function ([_, owner, walletToCollectEth, investor, publ
     await increaseTimeTo(this.openingTime);
     const currentRate = await this.crowdsale.getCurrentRate();
     currentRate.should.be.bignumber.equal(RATE_PRIVATE);
+  });
+
+  it('should report closing crowdsale', async function () {
+    await increaseTimeTo(this.openingTime);
+    const isClosed = await this.crowdsale.hasClosed();
+    isClosed.should.be.equal(false);
+    await increaseTimeTo(this.closingTime + 1);
+    const isClosedFinally = await this.crowdsale.hasClosed();
+    isClosedFinally.should.be.equal(true);
   });
 
   /**
